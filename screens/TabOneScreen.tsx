@@ -1,15 +1,18 @@
 import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from '../components/EditScreenInfo';
+import Keyboard from '../components/Keyboard';
 import { Text, View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabOneScreen.tsx" />
+      <View style={styles.gameContainer}>
+        <Text>test</Text>
+      </View>
+      <View style={styles.keyboardContainer}>
+        <Keyboard />
+      </View>
     </View>
   );
 }
@@ -20,13 +23,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  gameContainer:{
+    height: '70%',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  keyboardContainer: {
+    height: '30%',
+    width: '100%'
   },
 });
