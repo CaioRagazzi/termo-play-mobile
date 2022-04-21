@@ -2,9 +2,9 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import Letter from "./Letter";
 
-export default function Keyboard() {
+export default function Keyboard({ onPress }: { onPress?: (letter: string) => void }) {
     function onLetterPressed(param: string) {
-        console.log(param);
+        onPress ? onPress(param) : null;
     }
 
     return (

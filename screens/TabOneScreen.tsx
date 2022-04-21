@@ -1,17 +1,25 @@
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import Keyboard from '../components/Keyboard';
-import { Text, View } from '../components/Themed';
+import TableLetterGame from '../components/TableLetterGame';
+import { View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
 
 export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
+  const [selectedLetter, setSelectedLetter] = useState('');
+
+  function onLetterPressed(params: string) {
+    setSelectedLetter(params)
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.gameContainer}>
-        <Text>test</Text>
+        <TableLetterGame inputLetter={selectedLetter} />
       </View>
       <View style={styles.keyboardContainer}>
-        <Keyboard />
+        <Keyboard onPress={onLetterPressed} />
       </View>
     </View>
   );
@@ -23,7 +31,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  gameContainer:{
+  gameContainer: {
     height: '70%',
     width: '100%',
     alignItems: 'center',
