@@ -1,13 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import CellLetter from "./CellLetter";
+import { OnPressKeyboardEvent } from "./Keyboard";
 
-export default function CellLine({ disabled = true, inputLetter }: { disabled: boolean, inputLetter?: string }) {
+export type CellLineProps = {
+    disabled: boolean,
+    inputLetter?: OnPressKeyboardEvent,
+    position?: number,
+}
+
+export default function CellLine({ disabled = true, inputLetter, position }: CellLineProps) {
     const [firstCellLetterSelected, setFirstCellLetterSelected] = useState(false);
     const [secondCellLetterSelected, setSeconCellLetterSelected] = useState(false);
     const [thirdCellLetterSelected, setThirdCellLetterSelected] = useState(false);
     const [fourthCellLetterSelected, setFourthCellLetterSelected] = useState(false);
     const [fifithCellLetterSelected, setfifthCellLetterSelected] = useState(false);
+
+    useEffect(() => {
+        setFirstCellLetterSelected(true);
+    }, [])
+
+    useEffect(() => {
+        if (disabled) {
+            setFirstCellLetterSelected(false);
+            setSeconCellLetterSelected(false);
+            setThirdCellLetterSelected(false);
+            setFourthCellLetterSelected(false);
+            setfifthCellLetterSelected(false);
+        } else {
+            setFirstCellLetterSelected(true);
+        }
+    }, [disabled])
 
     useEffect(() => {
         if (firstCellLetterSelected) {
@@ -54,14 +77,35 @@ export default function CellLine({ disabled = true, inputLetter }: { disabled: b
         }
     }, [fifithCellLetterSelected])
 
+    function onLetterChange(param: number | undefined) {
+        switch (param) {
+            case 1:
+                setSeconCellLetterSelected(true);
+                break;
+            case 2:
+                setThirdCellLetterSelected(true);
+                break;
+            case 3:
+                setFourthCellLetterSelected(true);
+                break;
+            case 4:
+                setfifthCellLetterSelected(true);
+                break;
+            case 5:
+                setFirstCellLetterSelected(true);
+                break;
+            default:
+                break;
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <CellLetter letter={inputLetter} disabled={disabled} onTouched={(event) => setFirstCellLetterSelected(event)} selected={firstCellLetterSelected} />
-            <CellLetter letter={inputLetter} disabled={disabled} onTouched={(event) => setSeconCellLetterSelected(event)} selected={secondCellLetterSelected} />
-            <CellLetter letter={inputLetter} disabled={disabled} onTouched={(event) => setThirdCellLetterSelected(event)} selected={thirdCellLetterSelected} />
-            <CellLetter letter={inputLetter} disabled={disabled} onTouched={(event) => setFourthCellLetterSelected(event)} selected={fourthCellLetterSelected} />
-            <CellLetter letter={inputLetter} disabled={disabled} onTouched={(event) => setfifthCellLetterSelected(event)} selected={fifithCellLetterSelected} />
+            <CellLetter onLetterChange={onLetterChange} position={1} letter={inputLetter} disabled={disabled} onTouched={(event) => setFirstCellLetterSelected(event.state)} selected={firstCellLetterSelected} />
+            <CellLetter onLetterChange={onLetterChange} position={2} letter={inputLetter} disabled={disabled} onTouched={(event) => setSeconCellLetterSelected(event.state)} selected={secondCellLetterSelected} />
+            <CellLetter onLetterChange={onLetterChange} position={3} letter={inputLetter} disabled={disabled} onTouched={(event) => setThirdCellLetterSelected(event.state)} selected={thirdCellLetterSelected} />
+            <CellLetter onLetterChange={onLetterChange} position={4} letter={inputLetter} disabled={disabled} onTouched={(event) => setFourthCellLetterSelected(event.state)} selected={fourthCellLetterSelected} />
+            <CellLetter onLetterChange={onLetterChange} position={5} letter={inputLetter} disabled={disabled} onTouched={(event) => setfifthCellLetterSelected(event.state)} selected={fifithCellLetterSelected} />
         </View>
     )
 }

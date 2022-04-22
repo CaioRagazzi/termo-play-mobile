@@ -4,22 +4,21 @@ import { View, Text, StyleSheet, StyleProp, ViewStyle, Dimensions, TouchableOpac
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export type LetterProps = {
-    letter: string,
+export type DeleteLetterProps = {
     style?: StyleProp<ViewStyle>,
-    onPress?: (letter: string, date: Date) => void,
+    onPress?: (date: Date) => void,
 }
 
-export default function Letter({ letter, style, onPress }: LetterProps) {
+export default function DeleteLetter({ style, onPress }: DeleteLetterProps) {
     
-    function handlePressLetter() {        
-        onPress ? onPress(letter, new Date) : null;
+    function handlePressLetter() {      
+        onPress ? onPress(new Date) : null
     }
 
     return (
         <TouchableOpacity onPress={handlePressLetter} style={[styles.container, style]}>
             <View style={styles.containerLetter}>
-                <Text adjustsFontSizeToFit style={styles.letter}>{letter}</Text>
+                <Text adjustsFontSizeToFit style={styles.letter}>⌫</Text>
             </View>
         </TouchableOpacity>
     )
@@ -38,7 +37,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     letter: {
-        fontSize: 26,
+        fontSize: 18,
         fontWeight: 'bold'
     }
 })

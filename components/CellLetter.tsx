@@ -1,15 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { View, StyleSheet, Text, Dimensions, TouchableOpacity } from "react-native";
+import { OnPressKeyboardEvent } from "./Keyboard";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-export default function CellLetter({ letter, onTouched, selected, disabled = true }: { letter?: string, onTouched?: (state: boolean) => void, selected: boolean, disabled?: boolean }) {
+export type OnCellLetterTouched = {
+    state: boolean,
+    position?: number
+}
+
+type CellLetterProps = {
+    letter?: OnPressKeyboardEvent,
+    onTouched?: (event: OnCellLetterTouched) => void,
+    onLetterChange?: (position?: number) => void,
+    selected: boolean,
+    disabled?: boolean,
+    position?: number
+}
+
+export default function CellLetter({ letter, onTouched, selected, disabled = true, position, onLetterChange }: CellLetterProps) {
     const [isPressed, setIsPressed] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState('');
 
     useEffect(() => {
-        onTouched ? onTouched(isPressed) : null;
+        onTouched ? onTouched({ state: isPressed, position }) : null;
     }, [isPressed])
 
     useEffect(() => {
@@ -17,11 +32,16 @@ export default function CellLetter({ letter, onTouched, selected, disabled = tru
     }, [selected])
 
     useEffect(() => {
-      if (!disabled && selected && letter) {
-        setSelectedLetter(letter);
-      }
+        if (!disabled && selected && letter) {
+            if (letter.isDeleteLetter) {
+                setSelectedLetter('');
+            } else {
+                setSelectedLetter(letter.letter);
+                onLetterChange ? onLetterChange(position) : undefined
+            }
+        }
     }, [letter])
-    
+
 
     function onCellLetterPressed() {
         setIsPressed(!isPressed);

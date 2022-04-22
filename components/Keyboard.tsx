@@ -1,10 +1,30 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import DeleteLetter from "./DeleteLetter";
+import EnterLetter from "./EnterLetter";
 import Letter from "./Letter";
 
-export default function Keyboard({ onPress }: { onPress?: (letter: string) => void }) {
-    function onLetterPressed(param: string) {
-        onPress ? onPress(param) : null;
+export type OnPressKeyboardEvent = {
+    letter: string, 
+    date: Date, 
+    isDeleteLetter: boolean
+    isEnterLetter: boolean
+}
+type KeyboardProps = {
+    onPress?: (event: OnPressKeyboardEvent) => void,
+}
+
+export default function Keyboard({ onPress }: KeyboardProps) {
+    function onLetterPressed(letter: string, date: Date) {
+        onPress ? onPress({date, isDeleteLetter: false, letter, isEnterLetter: false}) : null;
+    }
+
+    function onDeletedLetterPressed(date: Date) {
+        onPress ? onPress({date, isDeleteLetter: true, letter: '', isEnterLetter: false}) : null;
+    }
+
+    function onEnterLetterPressed(date: Date) {
+        onPress ? onPress({date, isDeleteLetter: false, letter: '', isEnterLetter: true}) : null;
     }
 
     return (
@@ -31,6 +51,7 @@ export default function Keyboard({ onPress }: { onPress?: (letter: string) => vo
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="J" />
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="K" />
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="L" />
+                <DeleteLetter onPress={onDeletedLetterPressed} style={styles.letter} />
             </View>
             <View style={styles.containerThirdLine}>
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="Z" />
@@ -40,6 +61,8 @@ export default function Keyboard({ onPress }: { onPress?: (letter: string) => vo
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="B" />
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="N" />
                 <Letter onPress={onLetterPressed} style={styles.letter} letter="M" />
+                <Letter onPress={onLetterPressed} style={styles.letter} letter="M" />
+                <EnterLetter onPress={onEnterLetterPressed} style={styles.letter} />
             </View>
         </View>
     )
