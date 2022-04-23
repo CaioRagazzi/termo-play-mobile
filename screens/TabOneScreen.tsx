@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import Keyboard, { OnPressKeyboardEvent } from '../components/Keyboard';
 import TableLetterGame from '../components/TableLetterGame';
 import { View } from '../components/Themed';
 import { RootTabScreenProps } from '../types';
+import { inject, observer } from "mobx-react";
+import { IMainGameStore } from '../stores/main-game';
 
-export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'>) {
+function TabOneScreen({ navigation, MainGameStore }: { MainGameStore: IMainGameStore, navigation: RootTabScreenProps<'TabOne'> }) {
   const [selectedLetter, setSelectedLetter] = useState<OnPressKeyboardEvent>({ letter: '', date: new Date, isDeleteLetter: false, isEnterLetter: false });
   const [activeLine, setActiveLine] = useState<number>(1)
+
+  const [test, setTest] = useState<any>(0)
+
+  useEffect(() => {
+    console.log(MainGameStore);
+
+    // const { text, updateText, data, searchImages } = props.store;
+  }, []);
 
   useEffect(() => {
     if (activeLine > 5) {
       setActiveLine(1);
     }
   }, [activeLine])
-  
+
 
   function onLetterPressed(onPressKeyboardEvent: OnPressKeyboardEvent) {
     if (onPressKeyboardEvent.isEnterLetter) {
@@ -35,6 +45,8 @@ export default function TabOneScreen({ navigation }: RootTabScreenProps<'TabOne'
     </View>
   );
 }
+
+export default inject("MainGameStore")(observer(TabOneScreen));
 
 const styles = StyleSheet.create({
   container: {
