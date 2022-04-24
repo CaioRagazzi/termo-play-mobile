@@ -1,67 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet } from 'react-native';
-
-import Keyboard, { OnPressKeyboardEvent } from '../components/Keyboard';
-import TableLetterGame from '../components/TableLetterGame';
-import { View } from '../components/Themed';
+import React from 'react';
 import { RootTabScreenProps } from '../types';
-import { inject, observer } from "mobx-react";
-import { IMainGameStore } from '../stores/main-game';
+import Game from '../components/Game';
 
-function TabOneScreen({ navigation, MainGameStore }: { MainGameStore: IMainGameStore, navigation: RootTabScreenProps<'TabOne'> }) {
-  const [selectedLetter, setSelectedLetter] = useState<OnPressKeyboardEvent>({ letter: '', date: new Date, isDeleteLetter: false, isEnterLetter: false });
-  const [activeLine, setActiveLine] = useState<number>(1)
-
-  const [test, setTest] = useState<any>(0)
-
-  useEffect(() => {
-    console.log(MainGameStore);
-
-    // const { text, updateText, data, searchImages } = props.store;
-  }, []);
-
-  useEffect(() => {
-    if (activeLine > 5) {
-      setActiveLine(1);
-    }
-  }, [activeLine])
-
-
-  function onLetterPressed(onPressKeyboardEvent: OnPressKeyboardEvent) {
-    if (onPressKeyboardEvent.isEnterLetter) {
-      setActiveLine(activeLine + 1)
-    }
-    setSelectedLetter(onPressKeyboardEvent)
-  }
-
+export default function TabOneScreen({ navigation }: { navigation: RootTabScreenProps<'TabOne'> }) {
   return (
-    <View style={styles.container}>
-      <View style={styles.gameContainer}>
-        <TableLetterGame activeLine={activeLine} inputLetter={selectedLetter} />
-      </View>
-      <View style={styles.keyboardContainer}>
-        <Keyboard onPress={onLetterPressed} />
-      </View>
-    </View>
+    <Game />
   );
 }
-
-export default inject("MainGameStore")(observer(TabOneScreen));
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gameContainer: {
-    height: '70%',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  keyboardContainer: {
-    height: '30%',
-    width: '100%'
-  },
-});

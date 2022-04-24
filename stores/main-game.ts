@@ -1,75 +1,197 @@
 import { action, computed, makeAutoObservable, makeObservable, observable } from "mobx";
 import * as SQLite from "expo-sqlite";
+import { format } from "date-fns";
 
-export interface IMainGameStore{
-    mainGame: string;
-    db: SQLite.WebSQLDatabase;
+export interface IMainGameStore {
+    getCurrentWord: () => Promise<Word>;
+}
+
+export class Word {
+    id: number = 0;
+    word: string = '';
+    startDate!: Date;
+    isCurrent: number = 0;
+}
+
+export class Tentative {
+    id: number = 0;
+    word: string = '';
+    tentaTiveDate!: Date;
+    wordId: number = 0;
+    position: number = 0;
 }
 
 class MainGameStore implements IMainGameStore {
-    mainGame = 'TESTANDO';
     db!: SQLite.WebSQLDatabase;
 
     constructor() {
         makeAutoObservable(this)
-        this.openDatabase();
-        // this.createTableIfNotExists();
-        this.selectFrom();
-        // this.dropTable();
+        // this.dropTableWord();
+        // this.dropTableTentative();
+        // this.createWordTableIfNotExists();
+        // this.createTentativesTableIfNotExists();
+        // this.insertCurrentWord('caios', new Date);
+        // this.selectFrom();
     }
 
     openDatabase() {
-        console.log('open database');
-        
         this.db = SQLite.openDatabase("db.db");
     }
 
-    createTableIfNotExists() {
-        this.db.transaction((tx) => {
-            tx.executeSql(
-                `CREATE TABLE IF NOT EXISTS MainGame`,
-                [],
-                (_, { rows: { _array } }) => { },
-                (_, error) => {
-                    console.log(error);
-                    return true;
-                }
-            );
-        });
+    createWordTableIfNotExists(): Promise<string> {
+        this.openDatabase();
+
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER )`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        resolve('created!')
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
     }
 
-    selectFrom() {
-        console.log('oi');
-        
-        this.db.transaction((tx) => {
-            tx.executeSql(
-                `Select * from MainGame`,
-                [],
-                (_, { rows: { _array } }) => {
-                    console.log(_array);
-                },
-                (_, error) => {
-                    console.log(error);
-                    return true;
-                }
-            );
-        });
+    createTentativesTableIfNotExists(): Promise<string> {
+        this.openDatabase();
+
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `CREATE TABLE IF NOT EXISTS Tentative (word TEXT NOT NULL, tentative_date TEXT NOT NULL, position INTEGER, main_game_id INTEGER, FOREIGN KEY (main_game_id) REFERENCES Word (rowid) )`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        resolve('created!')
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
     }
 
-    dropTable() {
-        this.db.transaction((tx) => {
-            tx.executeSql(
-                `drop table MainGame`,
-                [],
-                (_, { rows: { _array } }) => {
-                    console.log(_array);
-                },
-                (_, error) => {
-                    console.log(error);
-                    return true;
-                }
-            );
-        });
+    dropTableWord(): Promise<string> {
+        this.openDatabase();
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `drop table Word`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        resolve('Table Dropped')
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    dropTableTentative(): Promise<string> {
+        this.openDatabase();
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `drop table Tentative`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        resolve('Table Dropped')
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    insertCurrentWord(word: string, startDate: Date): Promise<string> {
+        let formatedDate = format(startDate, "yyyy-MM-dd'T'HH:mm:ss")
+        this.openDatabase();
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `insert into Word (word, start_date, is_current) values (?, ?, 1)`,
+                    [word, formatedDate],
+                    (_, { rows: { _array } }) => {
+                        resolve('Inserted!');
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    getCurrentWord(): Promise<Word> {
+        this.openDatabase();
+        let word: Word = new Word();
+
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `Select rowid, * from Word where is_current = 1`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        _array.forEach(dbWord => {
+                            word.id = dbWord.rowid;
+                            word.isCurrent = dbWord.is_current;
+                            word.startDate = dbWord.start_date;
+                            word.word = dbWord.word;
+                        })
+                        resolve(word);
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    getTentatives(wordId: number): Promise<Tentative[]> {
+        this.openDatabase();
+        let tentatives: Tentative[] = [];
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `Select rowid, * from Tentative where main_game_id = ?`,
+                    [wordId],
+                    (_, { rows: { _array } }) => {
+                        _array.forEach(dbWord => {
+                            let tentative = new Tentative();
+
+                            tentative.id = dbWord.rowid;
+                            tentative.word = dbWord.word;
+                            tentative.wordId = dbWord.main_game_id;
+                            tentative.tentaTiveDate = dbWord.tentative_date;
+                            tentative.position = dbWord.position;
+
+                            tentatives.push(tentative);
+                        })
+                        resolve(tentatives);
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
     }
 }
 

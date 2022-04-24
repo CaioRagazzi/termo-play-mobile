@@ -1,16 +1,20 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
+import { Word } from "../stores/main-game";
 import CellLine from "./CellLine";
 import { OnPressKeyboardEvent } from "./Keyboard";
 
 export type TableLetterGameProps = {
     inputLetter?: OnPressKeyboardEvent,
-    activeLine: number
+    activeLine: number,
+    word?: Word
 }
 
-export default function TableLetterGame({ inputLetter, activeLine }: TableLetterGameProps) {
+export default function TableLetterGame({ inputLetter, activeLine, word }: TableLetterGameProps) {
     useEffect(() => {
-    }, [inputLetter])
+        console.log(word);
+        
+    }, [word])
 
     return (
         <View style={styles.container}>
