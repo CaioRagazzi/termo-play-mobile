@@ -6,6 +6,7 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import { Provider } from 'mobx-react';
 import MainGameStore from "./stores/main-game";
+import Toast from 'react-native-toast-message'
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -18,6 +19,7 @@ export default function App() {
       <SafeAreaProvider>
         <Provider MainGameStore={MainGameStore}>
           <Navigation colorScheme={colorScheme} />
+          <Toast />
         </Provider>
         <StatusBar />
       </SafeAreaProvider>

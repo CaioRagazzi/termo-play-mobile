@@ -13,7 +13,7 @@ export type OnCellLetterTouched = {
 type CellLetterProps = {
     letter?: OnPressKeyboardEvent,
     onTouched?: (event: OnCellLetterTouched) => void,
-    onLetterChange?: (position?: number) => void,
+    onLetterChange?: (position?: number, selectedLetter?: string) => void,
     selected: boolean,
     disabled?: boolean,
     position?: number
@@ -35,10 +35,11 @@ export default function CellLetter({ letter, onTouched, selected, disabled = tru
         if (!disabled && selected && letter) {
             if (letter.isDeleteLetter) {
                 setSelectedLetter('');
-            } else {
-                setSelectedLetter(letter.letter);
-                onLetterChange ? onLetterChange(position) : undefined
+                return;
             }
+            if (letter.isEnterLetter) return;
+            setSelectedLetter(letter.letter);
+            onLetterChange ? onLetterChange(position, letter.letter) : undefined
         }
     }, [letter])
 

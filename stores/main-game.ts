@@ -4,6 +4,8 @@ import { format } from "date-fns";
 
 export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
+    getTentatives: (wordId: number) => Promise<Tentative[]>
+    insertTentative: (tentative: Tentative) => Promise<void>
 }
 
 export class Word {
@@ -184,6 +186,26 @@ class MainGameStore implements IMainGameStore {
                             tentatives.push(tentative);
                         })
                         resolve(tentatives);
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    insertTentative(tentative: Tentative): Promise<void> {
+        this.openDatabase();
+        let tentatives: Tentative[] = [];
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `insert into Tentative(word, tentative_date, position, main_game_id) values (?,?,?,?)`,
+                    [tentative.word, format(tentative.tentaTiveDate, "yyyy-MM-dd'T'HH:mm:ss"), tentative.position, tentative.wordId],
+                    (_, { rows: { _array } }) => {
+                        resolve();
                     },
                     (_, error) => {
                         reject(error);
