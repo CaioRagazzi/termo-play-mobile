@@ -14,14 +14,22 @@ type CellLetterProps = {
     letter?: OnPressKeyboardEvent,
     onTouched?: (event: OnCellLetterTouched) => void,
     onLetterChange?: (position?: number, selectedLetter?: string) => void,
+    historyLetter?: string;
     selected: boolean,
     disabled?: boolean,
     position?: number
 }
 
-export default function CellLetter({ letter, onTouched, selected, disabled = true, position, onLetterChange }: CellLetterProps) {
+export default function CellLetter({ letter, onTouched, selected, disabled = true, position, onLetterChange, historyLetter }: CellLetterProps) {
     const [isPressed, setIsPressed] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState('');
+
+    useEffect(() => {
+        if (historyLetter) {
+            setSelectedLetter(historyLetter);
+        }
+    }, [historyLetter])
+    
 
     useEffect(() => {
         onTouched ? onTouched({ state: isPressed, position }) : null;

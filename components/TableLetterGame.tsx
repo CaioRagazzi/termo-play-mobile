@@ -14,7 +14,7 @@ export type TableLetterGameProps = {
 
 function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGameProps) {
     const [activeLine, setActiveLine] = useState(0)
-    const [tentative, setTentative] = useState<Tentative[]>()
+    const [tentatives, setTentatives] = useState<Tentative[]>()
 
     const [inputLetterFirstPosition, setinputLetterFirstPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
     const [inputLetterSecondPosition, setinputLetterSecondPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
@@ -31,7 +31,7 @@ function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGamePr
 
     function getTentatives() {
         MainGameStore?.getTentatives(word?.id ?? 0).then(data => {
-            setTentative(data);
+            setTentatives(data);
             setActiveLine(data.length + 1);
         });
     }
@@ -89,7 +89,7 @@ function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGamePr
     }
 
     function getTentative(position: number): Tentative | undefined {
-        let tentativeFiltered = tentative?.find(r => r.position === position);
+        let tentativeFiltered = tentatives?.find(r => r.position === position);
         return tentativeFiltered;
     }
 
