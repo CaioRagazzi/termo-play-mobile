@@ -9,12 +9,14 @@ import Toast from 'react-native-toast-message';
 export type TableLetterGameProps = {
     inputLetter?: OnPressKeyboardEvent,
     word?: Word,
-    MainGameStore?: IMainGameStore
+    MainGameStore?: IMainGameStore,
+    tentatives?:Tentative[],
+    isLoading?: boolean, 
 }
 
-function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGameProps) {
+function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoading }: TableLetterGameProps) {
     const [activeLine, setActiveLine] = useState(0)
-    const [tentatives, setTentatives] = useState<Tentative[]>()
+    // const [tentatives, setTentatives] = useState<Tentative[]>()
 
     const [inputLetterFirstPosition, setinputLetterFirstPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
     const [inputLetterSecondPosition, setinputLetterSecondPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
@@ -24,17 +26,11 @@ function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGamePr
 
     const [writenWord, setWritenWord] = useState('');
 
-
     useEffect(() => {
-        getTentatives();
-    }, [word])
-
-    function getTentatives() {
-        MainGameStore?.getTentatives(word?.id ?? 0).then(data => {
-            setTentatives(data);
-            setActiveLine(data.length + 1);
-        });
-    }
+        if (tentatives) {
+            setActiveLine(tentatives.length + 1);
+        }
+    }, [tentatives])
 
     useEffect(() => {
         if (!inputLetter) return;
@@ -67,11 +63,17 @@ function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGamePr
             Toast.show({
                 type: 'error',
                 text1: 'Word Incomplete',
-                text2: 'Please select all words'
+                text2: 'Please select all letters'
             });
         } else {
             saveTentative(writenWord)
         }
+    }
+
+    function getTentatives() {
+        MainGameStore?.getTentatives(word?.id ?? 0).then(data => {
+            setActiveLine(data.length + 1);
+        });
     }
 
     function saveTentative(wordToSave: string) {
@@ -99,11 +101,11 @@ function TableLetterGame({ inputLetter, word, MainGameStore }: TableLetterGamePr
 
     return (
         <View style={styles.container}>
-            <CellLine onWordChange={onWordChangeHandle} tentative={getTentative(1)} position={1} inputLetter={inputLetterFirstPosition} disabled={activeLine !== 1} />
-            <CellLine onWordChange={onWordChangeHandle} tentative={getTentative(2)} position={2} inputLetter={inputLetterSecondPosition} disabled={activeLine !== 2} />
-            <CellLine onWordChange={onWordChangeHandle} tentative={getTentative(3)} position={3} inputLetter={inputLetterThirdPosition} disabled={activeLine !== 3} />
-            <CellLine onWordChange={onWordChangeHandle} tentative={getTentative(4)} position={4} inputLetter={inputLetterFourfthPosition} disabled={activeLine !== 4} />
-            <CellLine onWordChange={onWordChangeHandle} tentative={getTentative(5)} position={5} inputLetter={inputLetterFifthPosition} disabled={activeLine !== 5} />
+            <CellLine isLoading={isLoading} rightWord={word?.word} onWordChange={onWordChangeHandle} tentative={getTentative(1)} position={1} inputLetter={inputLetterFirstPosition} disabled={activeLine !== 1} />
+            <CellLine isLoading={isLoading} rightWord={word?.word} onWordChange={onWordChangeHandle} tentative={getTentative(2)} position={2} inputLetter={inputLetterSecondPosition} disabled={activeLine !== 2} />
+            <CellLine isLoading={isLoading} rightWord={word?.word} onWordChange={onWordChangeHandle} tentative={getTentative(3)} position={3} inputLetter={inputLetterThirdPosition} disabled={activeLine !== 3} />
+            <CellLine isLoading={isLoading} rightWord={word?.word} onWordChange={onWordChangeHandle} tentative={getTentative(4)} position={4} inputLetter={inputLetterFourfthPosition} disabled={activeLine !== 4} />
+            <CellLine isLoading={isLoading} rightWord={word?.word} onWordChange={onWordChangeHandle} tentative={getTentative(5)} position={5} inputLetter={inputLetterFifthPosition} disabled={activeLine !== 5} />
         </View>
     )
 }

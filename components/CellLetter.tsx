@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, Dimensions, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, Dimensions, TouchableOpacity, ViewStyle, StyleProp, ActivityIndicator } from "react-native";
 import { OnPressKeyboardEvent } from "./Keyboard";
 
 const windowWidth = Dimensions.get('window').width;
@@ -17,10 +17,12 @@ type CellLetterProps = {
     historyLetter?: string;
     selected: boolean,
     disabled?: boolean,
-    position?: number
+    position?: number,
+    rightLetter?: string,
+    isLoading?: boolean,
 }
 
-export default function CellLetter({ letter, onTouched, selected, disabled = true, position, onLetterChange, historyLetter }: CellLetterProps) {
+export default function CellLetter({ letter, onTouched, selected, disabled = true, position, onLetterChange, historyLetter, rightLetter, isLoading }: CellLetterProps) {
     const [isPressed, setIsPressed] = useState(false);
     const [selectedLetter, setSelectedLetter] = useState('');
 
@@ -29,7 +31,6 @@ export default function CellLetter({ letter, onTouched, selected, disabled = tru
             setSelectedLetter(historyLetter);
         }
     }, [historyLetter])
-    
 
     useEffect(() => {
         onTouched ? onTouched({ state: isPressed, position }) : null;
@@ -56,10 +57,27 @@ export default function CellLetter({ letter, onTouched, selected, disabled = tru
         setIsPressed(!isPressed);
     }
 
+    function getContainerStyle(): StyleProp<ViewStyle> {
+        var stylesContainer: StyleProp<ViewStyle>[] = [];
+        stylesContainer.push(styles.container)
+        if (!isLoading) {
+            if (rightLetter?.toLocaleLowerCase() === selectedLetter?.toLocaleLowerCase() && disabled) stylesContainer.push(styles.containerRightLetter);
+            if (rightLetter?.toLocaleLowerCase() !== selectedLetter?.toLocaleLowerCase() && disabled) stylesContainer.push(styles.containerWrongLetter);
+            if (disabled && !selectedLetter) stylesContainer.push(styles.containerDisabled);
+            if (isPressed) stylesContainer.push(styles.containerPressed);
+        }
+
+        return stylesContainer;
+    }
+
     return (
-        <TouchableOpacity disabled={disabled} style={[styles.container, isPressed ? styles.containerPressed : null, disabled ? styles.containerDisabled : null]} onPress={onCellLetterPressed}>
+        <TouchableOpacity disabled={disabled} style={getContainerStyle()} onPress={onCellLetterPressed}>
             <View style={styles.containerCellLetter}>
-                <Text adjustsFontSizeToFit style={styles.letter}>{selectedLetter?.toUpperCase()}</Text>
+                {
+                    isLoading ?
+                        <ActivityIndicator size="small" color="#0000ff" /> :
+                        <Text adjustsFontSizeToFit style={styles.letter}>{selectedLetter?.toUpperCase()}</Text>
+                }
             </View>
         </TouchableOpacity>
     )
@@ -79,6 +97,12 @@ const styles = StyleSheet.create({
     },
     containerDisabled: {
         backgroundColor: '#d3d3d3',
+    },
+    containerRightLetter: {
+        backgroundColor: '#90ee90'
+    },
+    containerWrongLetter: {
+        backgroundColor: '#ee9090'
     },
     containerCellLetter: {
         flexGrow: 1,

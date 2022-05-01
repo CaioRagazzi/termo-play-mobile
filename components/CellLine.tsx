@@ -11,9 +11,11 @@ export type CellLineProps = {
     position?: number,
     tentative?: Tentative,
     onWordChange?: (word?: string) => void,
+    rightWord?:string,
+    isLoading?: boolean
 }
 
-export default function CellLine({ disabled = true, inputLetter, position, tentative, onWordChange }: CellLineProps) {
+export default function CellLine({ disabled = true, inputLetter, rightWord, tentative, onWordChange, isLoading }: CellLineProps) {
     const [firstCellLetterSelected, setFirstCellLetterSelected] = useState(false);
     const [secondCellLetterSelected, setSeconCellLetterSelected] = useState(false);
     const [thirdCellLetterSelected, setThirdCellLetterSelected] = useState(false);
@@ -135,11 +137,11 @@ export default function CellLine({ disabled = true, inputLetter, position, tenta
 
     return (
         <View style={styles.container}>
-            <CellLetter historyLetter={firstLetterHistory} onLetterChange={onLetterChange} position={1} letter={inputLetter} disabled={disabled} onTouched={(event) => setFirstCellLetterSelected(event.state)} selected={firstCellLetterSelected} />
-            <CellLetter historyLetter={secondLetterHistory} onLetterChange={onLetterChange} position={2} letter={inputLetter} disabled={disabled} onTouched={(event) => setSeconCellLetterSelected(event.state)} selected={secondCellLetterSelected} />
-            <CellLetter historyLetter={thirdLetterHistory} onLetterChange={onLetterChange} position={3} letter={inputLetter} disabled={disabled} onTouched={(event) => setThirdCellLetterSelected(event.state)} selected={thirdCellLetterSelected} />
-            <CellLetter historyLetter={fourthLetterHistory} onLetterChange={onLetterChange} position={4} letter={inputLetter} disabled={disabled} onTouched={(event) => setFourthCellLetterSelected(event.state)} selected={fourthCellLetterSelected} />
-            <CellLetter historyLetter={fifithLetterHistory} onLetterChange={onLetterChange} position={5} letter={inputLetter} disabled={disabled} onTouched={(event) => setFifthCellLetterSelected(event.state)} selected={fifithCellLetterSelected} />
+            <CellLetter isLoading={isLoading} rightLetter={rightWord?.[0]} historyLetter={firstLetterHistory} onLetterChange={onLetterChange} position={1} letter={inputLetter} disabled={disabled} onTouched={(event) => setFirstCellLetterSelected(event.state)} selected={firstCellLetterSelected} />
+            <CellLetter isLoading={isLoading} rightLetter={rightWord?.[1]} historyLetter={secondLetterHistory} onLetterChange={onLetterChange} position={2} letter={inputLetter} disabled={disabled} onTouched={(event) => setSeconCellLetterSelected(event.state)} selected={secondCellLetterSelected} />
+            <CellLetter isLoading={isLoading} rightLetter={rightWord?.[2]} historyLetter={thirdLetterHistory} onLetterChange={onLetterChange} position={3} letter={inputLetter} disabled={disabled} onTouched={(event) => setThirdCellLetterSelected(event.state)} selected={thirdCellLetterSelected} />
+            <CellLetter isLoading={isLoading} rightLetter={rightWord?.[3]} historyLetter={fourthLetterHistory} onLetterChange={onLetterChange} position={4} letter={inputLetter} disabled={disabled} onTouched={(event) => setFourthCellLetterSelected(event.state)} selected={fourthCellLetterSelected} />
+            <CellLetter isLoading={isLoading} rightLetter={rightWord?.[4]} historyLetter={fifithLetterHistory} onLetterChange={onLetterChange} position={5} letter={inputLetter} disabled={disabled} onTouched={(event) => setFifthCellLetterSelected(event.state)} selected={fifithCellLetterSelected} />
         </View>
     )
 }

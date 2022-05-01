@@ -4,15 +4,21 @@ import { inject, observer } from 'mobx-react';
 
 import Keyboard, { OnPressKeyboardEvent } from './Keyboard';
 import TableLetterGame from './TableLetterGame';
-import { IMainGameStore, Word } from '../stores/main-game';
+import { IMainGameStore, Tentative, Word } from '../stores/main-game';
 
 function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
     const [selectedLetter, setSelectedLetter] = useState<OnPressKeyboardEvent | undefined>(undefined);
     const [word, setWord] = useState<Word>();
+    const [tentatives, settentatives] = useState<Tentative[]>()
+    const [isLoading, setisLoading] = useState(true)
 
     useEffect(() => {
-        MainGameStore?.getCurrentWord().then(data => {
-            setWord(data);
+        MainGameStore?.getCurrentWord().then(dataWord => {
+            MainGameStore?.getTentatives(dataWord?.id ?? 0).then(dataTentative => {
+                settentatives(dataTentative);
+                setWord(dataWord);
+                setisLoading(false);
+            });
         });
     }, []);
 
@@ -25,7 +31,7 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
     return (
         <View style={styles.container}>
             <View style={styles.gameContainer}>
-                <TableLetterGame word={word} inputLetter={selectedLetter} />
+                <TableLetterGame isLoading={isLoading} tentatives={tentatives} word={word} inputLetter={selectedLetter} />
             </View>
             <View style={styles.keyboardContainer}>
                 <Keyboard onPress={onLetterPressed} />
