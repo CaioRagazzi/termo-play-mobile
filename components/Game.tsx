@@ -11,10 +11,14 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
     const [word, setWord] = useState<Word>();
     const [tentatives, settentatives] = useState<Tentative[]>()
     const [isLoading, setisLoading] = useState(true)
+    const [isGameOver, setIsGameOver] = useState(false);
 
     useEffect(() => {
         MainGameStore?.getCurrentWord().then(dataWord => {
             MainGameStore?.getTentatives(dataWord?.id ?? 0).then(dataTentative => {
+                if (dataWord.isCompleted) {
+                    onGameOver()
+                }
                 settentatives(dataTentative);
                 setWord(dataWord);
                 setisLoading(false);
@@ -28,10 +32,14 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
         }
     }
 
+    function onGameOver() {
+        setIsGameOver(true);        
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.gameContainer}>
-                <TableLetterGame isLoading={isLoading} tentatives={tentatives} word={word} inputLetter={selectedLetter} />
+                <TableLetterGame isCompleted={isGameOver} isLoading={isLoading} tentatives={tentatives} word={word} inputLetter={selectedLetter} onGameOver={onGameOver} />
             </View>
             <View style={styles.keyboardContainer}>
                 <Keyboard onPress={onLetterPressed} />

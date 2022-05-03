@@ -8,15 +8,16 @@ import Toast from 'react-native-toast-message';
 
 export type TableLetterGameProps = {
     inputLetter?: OnPressKeyboardEvent,
+    onGameOver?: () => void
     word?: Word,
     MainGameStore?: IMainGameStore,
-    tentatives?:Tentative[],
-    isLoading?: boolean, 
+    tentatives?: Tentative[],
+    isLoading?: boolean,
+    isCompleted?: boolean,
 }
 
-function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoading }: TableLetterGameProps) {
+function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoading, onGameOver, isCompleted }: TableLetterGameProps) {
     const [activeLine, setActiveLine] = useState(0)
-    // const [tentatives, setTentatives] = useState<Tentative[]>()
 
     const [inputLetterFirstPosition, setinputLetterFirstPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
     const [inputLetterSecondPosition, setinputLetterSecondPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
@@ -27,10 +28,14 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
     const [writenWord, setWritenWord] = useState('');
 
     useEffect(() => {
-        if (tentatives) {
+        if (tentatives && !isCompleted) {
             setActiveLine(tentatives.length + 1);
         }
-    }, [tentatives])
+
+        if (isCompleted) {
+            setActiveLine(-1)
+        }
+    }, [tentatives, isCompleted])
 
     useEffect(() => {
         if (!inputLetter) return;
@@ -66,7 +71,12 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
                 text2: 'Please select all letters'
             });
         } else {
-            saveTentative(writenWord)
+            if (writenWord.toLowerCase() === word?.word.toLowerCase()) {
+                completeWord(word.id);
+                saveTentative(writenWord, true);
+                return;
+            }
+            saveTentative(writenWord, false);
         }
     }
 
@@ -76,7 +86,13 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
         });
     }
 
-    function saveTentative(wordToSave: string) {
+    function completeWord(wordId: number) {
+        MainGameStore?.completeWord(wordId).then(() => {
+            if (onGameOver) onGameOver();
+        });
+    }
+
+    function saveTentative(wordToSave: string, isCompleted: boolean) {
         if (word) {
             let tentativeToSave = new Tentative();
             tentativeToSave.position = activeLine;
@@ -85,7 +101,9 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
             tentativeToSave.wordId = word.id;
 
             MainGameStore?.insertTentative(tentativeToSave).then(() => {
-                getTentatives()
+                if (!isCompleted) {
+                    getTentatives()
+                }
             });
         }
     }

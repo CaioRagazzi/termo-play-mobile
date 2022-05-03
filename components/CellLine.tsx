@@ -11,8 +11,9 @@ export type CellLineProps = {
     position?: number,
     tentative?: Tentative,
     onWordChange?: (word?: string) => void,
-    rightWord?:string,
-    isLoading?: boolean
+    rightWord?: string,
+    isLoading?: boolean,
+    isCompleted?: boolean
 }
 
 export default function CellLine({ disabled = true, inputLetter, rightWord, tentative, onWordChange, isLoading }: CellLineProps) {
@@ -32,6 +33,7 @@ export default function CellLine({ disabled = true, inputLetter, rightWord, tent
     useEffect(() => {
         setFirstCellLetterSelected(true);
     }, [])
+
 
     useEffect(() => {
         if (disabled) {

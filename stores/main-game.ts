@@ -6,6 +6,7 @@ export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
     getTentatives: (wordId: number) => Promise<Tentative[]>
     insertTentative: (tentative: Tentative) => Promise<void>
+    completeWord: (wordId: number) => Promise<void>
 }
 
 export class Word {
@@ -13,6 +14,7 @@ export class Word {
     word: string = '';
     startDate!: Date;
     isCurrent: number = 0;
+    isCompleted: boolean = false;
 }
 
 export class Tentative {
@@ -46,7 +48,7 @@ class MainGameStore implements IMainGameStore {
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
-                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER )`,
+                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER, is_complete INTEGER )`,
                     [],
                     (_, { rows: { _array } }) => {
                         resolve('created!')
@@ -153,6 +155,7 @@ class MainGameStore implements IMainGameStore {
                             word.isCurrent = dbWord.is_current;
                             word.startDate = dbWord.start_date;
                             word.word = dbWord.word;
+                            word.isCompleted = dbWord.is_complete ? true : false;
                         })
                         resolve(word);
                     },
@@ -186,6 +189,26 @@ class MainGameStore implements IMainGameStore {
                             tentatives.push(tentative);
                         })
                         resolve(tentatives);
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    completeWord(wordId: number): Promise<void> {
+        this.openDatabase();
+        let tentatives: Tentative[] = [];
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `update Word set is_complete = 1 where rowid = ?`,
+                    [wordId],
+                    (_, { rows: { _array } }) => {
+                        resolve();
                     },
                     (_, error) => {
                         reject(error);
