@@ -140,11 +140,10 @@ class MainGameStore implements IMainGameStore {
         })
     }
 
-    getCurrentWord(): Promise<Word> {
-        this.openDatabase();
-        let word: Word = new Word();
-
-        return new Promise((resolve, reject) => {
+    async getCurrentWord(): Promise<Word> {
+        var promise = new Promise<Word>((resolve, reject) => {
+            this.openDatabase();
+            let word: Word = new Word();
             this.db.transaction((tx) => {
                 tx.executeSql(
                     `Select rowid, * from Word where is_current = 1`,
@@ -166,6 +165,9 @@ class MainGameStore implements IMainGameStore {
                 );
             });
         })
+        let responseDb = await promise; 
+
+        return responseDb;
     }
 
     getTentatives(wordId: number): Promise<Tentative[]> {

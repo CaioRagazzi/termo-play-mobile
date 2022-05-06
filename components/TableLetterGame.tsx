@@ -37,7 +37,7 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
         }
     }, [tentatives, isCompleted])
 
-    useEffect(() => {
+    useEffect(() => {        
         if (!inputLetter) return;
         if (inputLetter?.isEnterLetter) {
             checkWord();
