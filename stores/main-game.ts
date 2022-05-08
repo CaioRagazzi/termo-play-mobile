@@ -6,13 +6,14 @@ export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
     getTentatives: (wordId: number) => Promise<Tentative[]>
     insertTentative: (tentative: Tentative) => Promise<void>
-    completeWord: (wordId: number) => Promise<void>
+    completeWord: (wordId: number) => Promise<void[]>
 }
 
 export class Word {
     id: number = 0;
     word: string = '';
     startDate!: Date;
+    finishDate?: Date;
     isCurrent: number = 0;
     isCompleted: boolean = false;
 }
@@ -35,7 +36,6 @@ class MainGameStore implements IMainGameStore {
         // this.createWordTableIfNotExists();
         // this.createTentativesTableIfNotExists();
         // this.insertCurrentWord('caios', new Date);
-        // this.selectFrom();
     }
 
     openDatabase() {
@@ -48,7 +48,7 @@ class MainGameStore implements IMainGameStore {
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
-                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER, is_complete INTEGER )`,
+                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER, is_complete INTEGER, finish_date TEXT)`,
                     [],
                     (_, { rows: { _array } }) => {
                         resolve('created!')
@@ -155,6 +155,7 @@ class MainGameStore implements IMainGameStore {
                             word.startDate = dbWord.start_date;
                             word.word = dbWord.word;
                             word.isCompleted = dbWord.is_complete ? true : false;
+                            word.finishDate = dbWord.finish_date;
                         })
                         resolve(word);
                     },
@@ -165,7 +166,7 @@ class MainGameStore implements IMainGameStore {
                 );
             });
         })
-        let responseDb = await promise; 
+        let responseDb = await promise;
 
         return responseDb;
     }
@@ -201,10 +202,10 @@ class MainGameStore implements IMainGameStore {
         })
     }
 
-    completeWord(wordId: number): Promise<void> {
+    completeWord(wordId: number): Promise<void[]> {
         this.openDatabase();
-        let tentatives: Tentative[] = [];
-        return new Promise((resolve, reject) => {
+        let formatedCurrentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss")
+        let setCompletePromise = new Promise<void>((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
                     `update Word set is_complete = 1 where rowid = ?`,
@@ -219,6 +220,23 @@ class MainGameStore implements IMainGameStore {
                 );
             });
         })
+        let setCurrentDatePromise = new Promise<void>((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `update Word set finish_date = ? where rowid = ?`,
+                    [formatedCurrentDate, wordId],
+                    (_, { rows: { _array } }) => {
+                        resolve();
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+
+        return Promise.all([setCompletePromise, setCurrentDatePromise])
     }
 
     insertTentative(tentative: Tentative): Promise<void> {

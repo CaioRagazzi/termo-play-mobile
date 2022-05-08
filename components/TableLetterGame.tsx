@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 
 export type TableLetterGameProps = {
     inputLetter?: OnPressKeyboardEvent,
-    onGameOver?: () => void
+    onCorrectedWord?: () => void
     word?: Word,
     MainGameStore?: IMainGameStore,
     tentatives?: Tentative[],
@@ -16,7 +16,7 @@ export type TableLetterGameProps = {
     isCompleted?: boolean,
 }
 
-function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoading, onGameOver, isCompleted }: TableLetterGameProps) {
+function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoading, onCorrectedWord, isCompleted }: TableLetterGameProps) {
     const [activeLine, setActiveLine] = useState(0)
 
     const [inputLetterFirstPosition, setinputLetterFirstPosition] = useState<OnPressKeyboardEvent | undefined>(undefined)
@@ -88,7 +88,7 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
 
     function completeWord(wordId: number) {
         MainGameStore?.completeWord(wordId).then(() => {
-            if (onGameOver) onGameOver();
+            if (onCorrectedWord) onCorrectedWord();
         });
     }
 
