@@ -1,6 +1,6 @@
 import { action, computed, makeAutoObservable, makeObservable, observable } from "mobx";
 import * as SQLite from "expo-sqlite";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
@@ -152,10 +152,10 @@ class MainGameStore implements IMainGameStore {
                         _array.forEach(dbWord => {
                             word.id = dbWord.rowid;
                             word.isCurrent = dbWord.is_current;
-                            word.startDate = dbWord.start_date;
+                            word.startDate = parseISO(dbWord.start_date);
                             word.word = dbWord.word;
                             word.isCompleted = dbWord.is_complete ? true : false;
-                            word.finishDate = dbWord.finish_date;
+                            word.finishDate = dbWord.finish_date ? parseISO(dbWord.finish_date) : undefined;
                         })
                         resolve(word);
                     },
@@ -186,7 +186,7 @@ class MainGameStore implements IMainGameStore {
                             tentative.id = dbWord.rowid;
                             tentative.word = dbWord.word;
                             tentative.wordId = dbWord.main_game_id;
-                            tentative.tentaTiveDate = dbWord.tentative_date;
+                            tentative.tentaTiveDate = parseISO(dbWord.tentative_date);
                             tentative.position = dbWord.position;
 
                             tentatives.push(tentative);

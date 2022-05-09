@@ -7,17 +7,30 @@ import TableLetterGame from './TableLetterGame';
 import { IMainGameStore, Tentative, Word } from '../stores/main-game';
 import FinishModal from './FinishModal';
 
-function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
+export type GameProps = {
+    MainGameStore?: IMainGameStore,
+    OpenModal: boolean,
+    ModalClosed: () => void,
+}
+
+function Game({ MainGameStore, OpenModal, ModalClosed }: GameProps) {
     const [selectedLetter, setSelectedLetter] = useState<OnPressKeyboardEvent | undefined>(undefined);
     const [word, setWord] = useState<Word>();
     const [tentatives, settentatives] = useState<Tentative[]>()
     const [isLoading, setisLoading] = useState(true)
     const [isGameOver, setIsGameOver] = useState(false);
-    const [isModalOpen, setisModalOpen] = useState(false)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     useEffect(() => {
         GetWordWithTentatives()
     }, []);
+
+    useEffect(() => {
+        if (OpenModal) {
+            setIsModalOpen(true);
+        }
+    }, [OpenModal])
+
 
     function GetWordWithTentatives() {
         setisLoading(true);
@@ -41,7 +54,7 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
 
     function onCorrectedWord() {
         setIsGameOver(true);
-        setisModalOpen(true);
+        setIsModalOpen(true);
         MainGameStore?.getCurrentWord().then(dataWord => {
             MainGameStore?.getTentatives(dataWord?.id ?? 0).then(dataTentative => {
                 settentatives(dataTentative);
@@ -49,6 +62,11 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
                 setisLoading(false);
             });
         });
+    }
+
+    function modalClosed() {
+        setIsModalOpen(false)
+        ModalClosed()
     }
 
     return (
@@ -60,7 +78,7 @@ function Game({ MainGameStore }: { MainGameStore?: IMainGameStore }) {
                 <Keyboard onPress={onLetterPressed} />
             </View>
 
-            <FinishModal isOpen={isModalOpen} />
+            <FinishModal isOpen={isModalOpen} ModalClose={() => modalClosed()} />
         </View>
     )
 }
