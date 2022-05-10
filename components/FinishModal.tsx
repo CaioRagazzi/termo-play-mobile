@@ -45,14 +45,18 @@ function FinishModal({ MainGameStore, isOpen, ModalClose }: TableLetterGameProps
     return (
         <Modal style={styles.container} isOpen={internalIsModalOpen} onClosed={() => modalClosed()}>
             <View style={styles.header}>
-                <Text style={styles.headerTitleText}>Congratulations!</Text>
+                {
+                    word?.isCompleted ? 
+                    <Text style={styles.headerTitleText}>Well Done!</Text> : 
+                    <Text style={styles.headerTitleText}>Current Status</Text>
+                }
             </View>
             <View style={styles.body}>
                 <View style={{ paddingBottom: 10 }}>
-                    <Text ><Text style={styles.highlightText} >Start Date:</Text> {word?.finishDate ? format(word?.startDate, 'dd/MM/yyyy HH:mm:ss') : ''}</Text>
+                    <Text ><Text style={styles.highlightText} >Start Date:</Text> {word?.startDate ? format(word?.startDate, 'dd/MM/yyyy HH:mm:ss') : ''}</Text>
                     <Text ><Text style={styles.highlightText} >Finish Date:</Text> {word?.finishDate ? format(word?.finishDate, 'dd/MM/yyyy HH:mm:ss') : ''}</Text>
                     <Text ><Text style={styles.highlightText} >Total Minutes:</Text> {word?.finishDate && word?.startDate ? differenceInMinutes(word?.finishDate, word?.startDate) : ''}</Text>
-                    <Text ><Text style={styles.highlightText} >Correct Word:</Text> <Text style={{color: 'green'}}>{word?.word.toUpperCase()}</Text> </Text>
+                    {word?.isCompleted ? <Text ><Text style={styles.highlightText} >Correct Word:</Text> <Text style={{color: 'green'}}>{word?.word.toUpperCase()}</Text> </Text> : null}
                     <Text ><Text style={styles.highlightText} >Number of tentatives:</Text> {tentatives?.length} </Text>
                 </View>
                 {
@@ -68,7 +72,7 @@ function FinishModal({ MainGameStore, isOpen, ModalClose }: TableLetterGameProps
                 }
             </View>
             <View style={styles.footer}>
-                <Text ></Text>
+                <Text >Next word: {word?.nextWordDate ? format(word?.nextWordDate, 'dd/MM/yyyy HH:mm:ss') : undefined}</Text>
             </View>
         </Modal>
     )

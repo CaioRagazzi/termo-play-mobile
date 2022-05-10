@@ -1,21 +1,26 @@
-import { action, computed, makeAutoObservable, makeObservable, observable } from "mobx";
+import { makeAutoObservable } from "mobx";
 import * as SQLite from "expo-sqlite";
-import { format, parseISO } from "date-fns";
+import { add, format, parseISO } from "date-fns";
+import * as BackgroundFetch from 'expo-background-fetch';
+import * as TaskManager from 'expo-task-manager';
+import { BackgroundFetchStatus } from 'expo-background-fetch';
 
 export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
     getTentatives: (wordId: number) => Promise<Tentative[]>
     insertTentative: (tentative: Tentative) => Promise<void>
     completeWord: (wordId: number) => Promise<void[]>
+    setStartDateWord: (wordId: number) => Promise<void>
 }
 
 export class Word {
     id: number = 0;
     word: string = '';
-    startDate!: Date;
+    startDate?: Date;
     finishDate?: Date;
     isCurrent: number = 0;
     isCompleted: boolean = false;
+    nextWordDate!: Date;
 }
 
 export class Tentative {
@@ -28,6 +33,7 @@ export class Tentative {
 
 class MainGameStore implements IMainGameStore {
     db!: SQLite.WebSQLDatabase;
+    backGroundName: string = 'background-fetch'
 
     constructor() {
         makeAutoObservable(this)
@@ -36,6 +42,13 @@ class MainGameStore implements IMainGameStore {
         // this.createWordTableIfNotExists();
         // this.createTentativesTableIfNotExists();
         // this.insertCurrentWord('caios', new Date);
+        this.unregisterBackgroundFetchAsync().then(() => {
+            this.defineTask().then(() => {
+                this.registerBackgroundFetchAsync().then(() => {
+                    console.log('background registered');
+                })
+            })
+        })
     }
 
     openDatabase() {
@@ -48,7 +61,7 @@ class MainGameStore implements IMainGameStore {
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
-                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT NOT NULL, is_current INTEGER, is_complete INTEGER, finish_date TEXT)`,
+                    `CREATE TABLE IF NOT EXISTS Word (word TEXT NOT NULL, start_date TEXT, is_current INTEGER, is_complete INTEGER, finish_date TEXT, next_word_date TEXT)`,
                     [],
                     (_, { rows: { _array } }) => {
                         resolve('created!')
@@ -121,13 +134,13 @@ class MainGameStore implements IMainGameStore {
     }
 
     insertCurrentWord(word: string, startDate: Date): Promise<string> {
-        let formatedDate = format(startDate, "yyyy-MM-dd'T'HH:mm:ss")
+        let nextWordDate = format(add(new Date(), { days: 1 }), "yyyy-MM-dd'T'HH:mm:ss")
         this.openDatabase();
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
-                    `insert into Word (word, start_date, is_current) values (?, ?, 1)`,
-                    [word, formatedDate],
+                    `insert into Word (word, is_current, next_word_date) values (?, 1, ?)`,
+                    [word, nextWordDate],
                     (_, { rows: { _array } }) => {
                         resolve('Inserted!');
                     },
@@ -152,10 +165,11 @@ class MainGameStore implements IMainGameStore {
                         _array.forEach(dbWord => {
                             word.id = dbWord.rowid;
                             word.isCurrent = dbWord.is_current;
-                            word.startDate = parseISO(dbWord.start_date);
+                            word.startDate = dbWord.start_date ? parseISO(dbWord.start_date) : undefined;
                             word.word = dbWord.word;
                             word.isCompleted = dbWord.is_complete ? true : false;
                             word.finishDate = dbWord.finish_date ? parseISO(dbWord.finish_date) : undefined;
+                            word.nextWordDate = parseISO(dbWord.next_word_date)
                         })
                         resolve(word);
                     },
@@ -239,6 +253,26 @@ class MainGameStore implements IMainGameStore {
         return Promise.all([setCompletePromise, setCurrentDatePromise])
     }
 
+    setStartDateWord(wordId: number): Promise<void> {
+        this.openDatabase();
+        let formatedCurrentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:ss")
+        return new Promise((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `update Word set start_date = ? where rowid = ?`,
+                    [formatedCurrentDate, wordId],
+                    (_, { rows: { _array } }) => {
+                        resolve();
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
     insertTentative(tentative: Tentative): Promise<void> {
         this.openDatabase();
         let tentatives: Tentative[] = [];
@@ -258,6 +292,32 @@ class MainGameStore implements IMainGameStore {
             });
         })
     }
+
+    async registerBackgroundFetchAsync() {
+        console.log('oi 2');
+        return BackgroundFetch.registerTaskAsync(this.backGroundName, {
+            minimumInterval: 1, // 15 minutes
+            stopOnTerminate: false, // android only,
+            startOnBoot: true, // android only
+        });
+    }
+
+    async unregisterBackgroundFetchAsync() {
+        return BackgroundFetch.unregisterTaskAsync(this.backGroundName);
+    }
+
+    async defineTask() {
+        TaskManager.defineTask(this.backGroundName, async () => {
+            const now = Date.now();
+
+            console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+
+            // Be sure to return the successful result type!
+            return BackgroundFetch.BackgroundFetchResult.NewData;
+        });
+    }
+
+
 }
 
 export default new MainGameStore();

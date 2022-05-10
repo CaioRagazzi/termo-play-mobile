@@ -105,6 +105,17 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
                     getTentatives()
                 }
             });
+
+            if (activeLine === 1) {
+                SetStartDate()
+            }
+        }
+    }
+
+    function SetStartDate() {
+        if (word?.id) {
+            MainGameStore?.setStartDateWord(word?.id).then(() => {
+            });
         }
     }
 
