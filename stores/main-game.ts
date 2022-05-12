@@ -1,9 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import * as SQLite from "expo-sqlite";
-import { add, format, parseISO } from "date-fns";
+import { add, compareDesc, format, parseISO } from "date-fns";
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
-import { BackgroundFetchStatus } from 'expo-background-fetch';
+import RandomWords from "random-words";
 
 export interface IMainGameStore {
     getCurrentWord: () => Promise<Word>;
@@ -34,22 +34,38 @@ export class Tentative {
 class MainGameStore implements IMainGameStore {
     db!: SQLite.WebSQLDatabase;
     backGroundName: string = 'background-fetch'
+    setIntervalInstance: NodeJS.Timer | null = null;
 
     constructor() {
         makeAutoObservable(this)
+        this.clearSetInterVal();
         // this.dropTableWord();
         // this.dropTableTentative();
         // this.createWordTableIfNotExists();
         // this.createTentativesTableIfNotExists();
         // this.insertCurrentWord('caios', new Date);
-        this.unregisterBackgroundFetchAsync().then(() => {
-            this.defineTask().then(() => {
-                this.registerBackgroundFetchAsync().then(() => {
-                    console.log('background registered');
-                })
-            })
-        })
+        // this.checkStatusAsync().then((data) => {
+        //     if (data) {
+        //         this.unregisterBackgroundFetchAsync().then(() => {
+        //             this.defineTask().then(() => {
+        //                 this.registerBackgroundFetchAsync().then(() => {
+        //                 })
+        //             })
+        //         })
+        //     }
+        //     this.defineTask().then(() => {
+        //         this.registerBackgroundFetchAsync().then(() => {
+        //         })
+        //     })
+        // })
+
+        this.startNewWordChecker();
     }
+
+    async checkStatusAsync() {
+        const isRegistered = await TaskManager.isTaskRegisteredAsync(this.backGroundName);
+        return isRegistered;
+    };
 
     openDatabase() {
         this.db = SQLite.openDatabase("db.db");
@@ -133,7 +149,7 @@ class MainGameStore implements IMainGameStore {
         })
     }
 
-    insertCurrentWord(word: string, startDate: Date): Promise<string> {
+    insertCurrentWord(word: string): Promise<string> {
         let nextWordDate = format(add(new Date(), { days: 1 }), "yyyy-MM-dd'T'HH:mm:ss")
         this.openDatabase();
         return new Promise((resolve, reject) => {
@@ -294,7 +310,6 @@ class MainGameStore implements IMainGameStore {
     }
 
     async registerBackgroundFetchAsync() {
-        console.log('oi 2');
         return BackgroundFetch.registerTaskAsync(this.backGroundName, {
             minimumInterval: 1, // 15 minutes
             stopOnTerminate: false, // android only,
@@ -309,12 +324,70 @@ class MainGameStore implements IMainGameStore {
     async defineTask() {
         TaskManager.defineTask(this.backGroundName, async () => {
             const now = Date.now();
-
             console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
-
-            // Be sure to return the successful result type!
             return BackgroundFetch.BackgroundFetchResult.NewData;
         });
+    }
+
+    async startNewWordChecker() {
+        await this.wordChecker();;
+        this.setIntervalInstance = setInterval(async () => {
+            await this.wordChecker();
+        }, 5000)
+    }
+
+    async wordChecker() {
+        let needsToChange = await this.checkIfNeedsToFinishCurrentGame();
+        if (needsToChange) {
+            await this.setCurrentWordNotCurrent();
+            var randomWord = this.getRandomWord();
+            await this.insertCurrentWord(randomWord);
+        }
+    }
+
+    getRandomWord() {
+        var wordsRandom = RandomWords({ exactly: 100, maxLength: 5 })
+        let wordToReturn: string = '';
+        wordsRandom.map(word => {
+            if (word.length === 5) {
+                wordToReturn = word;
+            }
+        })
+        if (wordToReturn === '') {
+            this.getRandomWord();
+        }
+        return wordToReturn;
+    }
+
+    async setCurrentWordNotCurrent() {
+        let currentWord = await this.getCurrentWord()
+
+        return new Promise<void>((resolve, reject) => {
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `update Word set is_current = ? where rowid = ?`,
+                    [0, currentWord.id],
+                    (_, { rows: { _array } }) => {
+                        resolve();
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        })
+    }
+
+    async checkIfNeedsToFinishCurrentGame() {
+        let currentWord = await this.getCurrentWord()
+        return compareDesc(currentWord.nextWordDate, new Date()) === 1
+    }
+
+    clearSetInterVal() {
+        if (this.setIntervalInstance !== null) {
+            clearInterval(this.setIntervalInstance)
+        }
     }
 
 

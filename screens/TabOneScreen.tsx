@@ -26,13 +26,6 @@ export default function TabOneScreen({ navigation }: { navigation: RootTabScreen
     setIsModalOpen(true);
   }
 
-  // async function checkStatusAsync() {
-  //   const status = await BackgroundFetch.getStatusAsync();
-  //   const isRegistered = await TaskManager.isTaskRegisteredAsync(backGroundName);
-  //   setStatus(status);
-  //   setIsRegistered(isRegistered);
-  // };
-
   return (
     <>
       <Game OpenModal={isModalOpen} ModalClosed={() => setIsModalOpen(false)} />
