@@ -7,6 +7,7 @@ import useColorScheme from './hooks/useColorScheme';
 import Navigation from './navigation';
 import { Provider } from 'mobx-react';
 import MainGameStore from "./stores/main-game";
+import ReportStore from "./stores/report";
 import Toast from 'react-native-toast-message'
 
 export default function App() {
@@ -18,7 +19,7 @@ export default function App() {
   } else {
     return (
       <SafeAreaProvider>
-        <Provider MainGameStore={MainGameStore}>
+        <Provider MainGameStore={MainGameStore} ReportStore={ReportStore}>
           <Navigation colorScheme={colorScheme} />
           <Toast />
         </Provider>

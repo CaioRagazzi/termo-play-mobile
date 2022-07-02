@@ -5,6 +5,7 @@ import { ColorSchemeName } from 'react-native';
 
 import TabOneScreen from '../screens/TabOneScreen';
 import LinkingConfiguration from './LinkingConfiguration';
+import ReportScreen from '../screens/ReportScreen';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -22,6 +23,7 @@ function DrawerNavigator() {
   return (
     <Drawer.Navigator initialRouteName="Home">
       <Drawer.Screen name="Home" component={TabOneScreen} options={{ headerShown: true }} />
+      <Drawer.Screen name="Report" component={ReportScreen} options={{ headerShown: true }} />
     </Drawer.Navigator>
   );
 }

@@ -291,7 +291,7 @@ class MainGameStore implements IMainGameStore {
 
     insertTentative(tentative: Tentative): Promise<void> {
         this.openDatabase();
-        let tentatives: Tentative[] = [];
+
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
                 tx.executeSql(
