@@ -150,10 +150,11 @@ class MainGameStore implements IMainGameStore {
     }
 
     insertCurrentWord(word: string): Promise<string> {
-        let nextWordDate = format(add(new Date(), { days: 1 }), "yyyy-MM-dd'T'HH:mm:ss")
+        
         this.openDatabase();
         return new Promise((resolve, reject) => {
             this.db.transaction((tx) => {
+                let nextWordDate = format(add(new Date(), { days: 1 }), "yyyy-MM-dd'T'HH:mm:ss")
                 tx.executeSql(
                     `insert into Word (word, is_current, next_word_date) values (?, 1, ?)`,
                     [word, nextWordDate],
@@ -179,6 +180,7 @@ class MainGameStore implements IMainGameStore {
                     [],
                     (_, { rows: { _array } }) => {
                         _array.forEach(dbWord => {
+                            
                             word.id = dbWord.rowid;
                             word.isCurrent = dbWord.is_current;
                             word.startDate = dbWord.start_date ? parseISO(dbWord.start_date) : undefined;

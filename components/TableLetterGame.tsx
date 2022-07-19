@@ -27,7 +27,10 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
 
     const [writenWord, setWritenWord] = useState('');
 
+    const [loadTentatives, setLoadTentatives] = useState<Tentative[]>();
+
     useEffect(() => {
+        setLoadTentatives(tentatives);
         if (tentatives && !isCompleted) {
             setActiveLine(tentatives.length + 1);
         }
@@ -37,7 +40,7 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
         }
     }, [tentatives, isCompleted])
 
-    useEffect(() => {        
+    useEffect(() => {          
         if (!inputLetter) return;
         if (inputLetter?.isEnterLetter) {
             checkWord();
@@ -70,18 +73,20 @@ function TableLetterGame({ inputLetter, word, MainGameStore, tentatives, isLoadi
                 text1: 'Word Incomplete',
                 text2: 'Please select all letters'
             });
-        } else {
+        } else {            
             if (writenWord.toLowerCase() === word?.word.toLowerCase()) {
+                setWritenWord('');
                 completeWord(word.id);
                 saveTentative(writenWord, true);
                 return;
             }
+            setWritenWord('');
             saveTentative(writenWord, false);
         }
     }
 
     function getTentatives() {
-        MainGameStore?.getTentatives(word?.id ?? 0).then(data => {
+        MainGameStore?.getTentatives(word?.id ?? 0).then(data => {            
             setActiveLine(data.length + 1);
         });
     }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { inject, observer } from 'mobx-react';
-
+import Toast from 'react-native-toast-message';
 import Keyboard, { OnPressKeyboardEvent } from './Keyboard';
 import TableLetterGame from './TableLetterGame';
 import { IMainGameStore, Tentative, Word } from '../stores/main-game';
@@ -47,6 +47,14 @@ function Game({ MainGameStore, OpenModal, ModalClosed }: GameProps) {
     }
 
     function onLetterPressed(onPressKeyboardEvent: OnPressKeyboardEvent | undefined) {
+        if (onPressKeyboardEvent?.isEnterLetter && isGameOver) {
+            Toast.show({
+                type: 'warning',
+                text1: 'Game is over!',
+                text2: 'Please wait until next word is available!'
+            });
+        }
+        
         if (onPressKeyboardEvent) {
             setSelectedLetter(onPressKeyboardEvent)
         }
@@ -75,7 +83,7 @@ function Game({ MainGameStore, OpenModal, ModalClosed }: GameProps) {
                 <TableLetterGame onCorrectedWord={onCorrectedWord} isCompleted={isGameOver} isLoading={isLoading} tentatives={tentatives} word={word} inputLetter={selectedLetter} />
             </View>
             <View style={styles.keyboardContainer}>
-                <Keyboard onPress={onLetterPressed} />
+                <Keyboard onPress={onLetterPressed}  />
             </View>
 
             <FinishModal isOpen={isModalOpen} ModalClose={() => modalClosed()} />

@@ -26,6 +26,8 @@ function FinishModal({ MainGameStore, isOpen, ModalClose }: TableLetterGameProps
 
     function getCurrentWord() {
         MainGameStore?.getCurrentWord().then(word => {
+            console.log(word);
+            
             setWord(word);
             MainGameStore.getTentatives(word.id).then(tentatives => {
                 setTentatives(tentatives)
@@ -57,7 +59,7 @@ function FinishModal({ MainGameStore, isOpen, ModalClose }: TableLetterGameProps
                     <Text ><Text style={styles.highlightText} >Finish Date:</Text> {word?.finishDate ? format(word?.finishDate, 'dd/MM/yyyy HH:mm:ss') : ''}</Text>
                     <Text ><Text style={styles.highlightText} >Total Minutes:</Text> {word?.finishDate && word?.startDate ? differenceInMinutes(word?.finishDate, word?.startDate) : ''}</Text>
                     {word?.isCompleted ? <Text ><Text style={styles.highlightText} >Correct Word:</Text> <Text style={{color: 'green'}}>{word?.word.toUpperCase()}</Text> </Text> : null}
-                    {/* <Text ><Text style={styles.highlightText} >Correct Word:</Text> <Text style={{color: 'green'}}>{word?.word.toUpperCase()}</Text> </Text> */}
+                    <Text ><Text style={styles.highlightText} >Correct Word:</Text> <Text style={{color: 'green'}}>{word?.word.toUpperCase()}</Text> </Text>
                     <Text ><Text style={styles.highlightText} >Number of tentatives:</Text> {tentatives?.length} </Text>
                 </View>
                 {
