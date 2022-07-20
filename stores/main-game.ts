@@ -44,20 +44,20 @@ class MainGameStore implements IMainGameStore {
         // this.createWordTableIfNotExists();
         // this.createTentativesTableIfNotExists();
         // this.insertCurrentWord('caios', new Date);
-        // this.checkStatusAsync().then((data) => {
-        //     if (data) {
-        //         this.unregisterBackgroundFetchAsync().then(() => {
-        //             this.defineTask().then(() => {
-        //                 this.registerBackgroundFetchAsync().then(() => {
-        //                 })
-        //             })
-        //         })
-        //     }
-        //     this.defineTask().then(() => {
-        //         this.registerBackgroundFetchAsync().then(() => {
-        //         })
-        //     })
-        // })
+        this.checkStatusAsync().then((data) => {
+            if (data) {
+                this.unregisterBackgroundFetchAsync().then(() => {
+                    this.defineTask().then(() => {
+                        this.registerBackgroundFetchAsync().then(() => {
+                        })
+                    })
+                })
+            }
+            this.defineTask().then(() => {
+                this.registerBackgroundFetchAsync().then(() => {
+                })
+            })
+        })
 
         this.startNewWordChecker();
     }
@@ -325,6 +325,7 @@ class MainGameStore implements IMainGameStore {
 
     async defineTask() {
         TaskManager.defineTask(this.backGroundName, async () => {
+            await this.wordChecker();
             const now = Date.now();
             console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
             return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -340,6 +341,8 @@ class MainGameStore implements IMainGameStore {
 
     async wordChecker() {
         let needsToChange = await this.checkIfNeedsToFinishCurrentGame();
+        console.log('needs to change', needsToChange);
+        
         if (needsToChange) {
             await this.setCurrentWordNotCurrent();
             var randomWord = this.getRandomWord();

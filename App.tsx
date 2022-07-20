@@ -9,6 +9,7 @@ import { Provider } from 'mobx-react';
 import MainGameStore from "./stores/main-game";
 import ReportStore from "./stores/report";
 import Toast from 'react-native-toast-message'
+import { Provider as PaperProvider } from 'react-native-paper';
 
 export default function App() {
   const isLoadingComplete = useCachedResources();
@@ -20,7 +21,9 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <Provider MainGameStore={MainGameStore} ReportStore={ReportStore}>
-          <Navigation colorScheme={colorScheme} />
+          <PaperProvider>
+            <Navigation colorScheme={colorScheme} />
+          </PaperProvider>
           <Toast />
         </Provider>
         <StatusBar />

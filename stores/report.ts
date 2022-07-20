@@ -1,10 +1,11 @@
 import { parseISO } from "date-fns";
 import * as SQLite from "expo-sqlite";
 import { makeAutoObservable } from "mobx";
-import { Tentative } from "./main-game";
+import { Tentative, Word } from "./main-game";
 
 export interface IReportStore {
     GetTentatives: () => Promise<Tentative[]>;
+    GetWords: () => Promise<Word[]>;
 }
 
 class ReportStore implements IReportStore {
@@ -46,6 +47,41 @@ class ReportStore implements IReportStore {
                 );
             });
         })
+        let responseDb = await promise;
+
+        return responseDb;
+    }
+
+    async GetWords(): Promise<Word[]> {
+        var promise = new Promise<Word[]>((resolve, reject) => {
+            this.openDatabase();
+            let words: Word[] = [];
+            this.db.transaction((tx) => {
+                tx.executeSql(
+                    `Select rowid, * from Word`,
+                    [],
+                    (_, { rows: { _array } }) => {
+                        _array.forEach(dbWord => {
+                            let word = new Word();
+                            word.id = dbWord.rowid;
+                            word.word = dbWord.word;
+                            word.startDate = parseISO(dbWord.start_date);
+                            word.finishDate = dbWord.finish_date;
+                            word.isCurrent = dbWord.is_current;
+                            word.isCompleted = dbWord.is_complete;
+                            word.nextWordDate = dbWord.next_word_date;
+
+                            words.push(word);
+                        })
+                        resolve(words);
+                    },
+                    (_, error) => {
+                        reject(error);
+                        return true;
+                    }
+                );
+            });
+        });
         let responseDb = await promise;
 
         return responseDb;
