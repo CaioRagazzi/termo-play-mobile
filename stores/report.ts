@@ -5,7 +5,7 @@ import { Tentative, Word } from "./main-game";
 
 export interface IReportStore {
     GetTentatives: () => Promise<Tentative[]>;
-    GetWords: () => Promise<Word[]>;
+    GetNotFinishedWords: () => Promise<Word[]>;
 }
 
 class ReportStore implements IReportStore {
@@ -52,13 +52,13 @@ class ReportStore implements IReportStore {
         return responseDb;
     }
 
-    async GetWords(): Promise<Word[]> {
+    async GetNotFinishedWords(): Promise<Word[]> {
         var promise = new Promise<Word[]>((resolve, reject) => {
             this.openDatabase();
             let words: Word[] = [];
             this.db.transaction((tx) => {
                 tx.executeSql(
-                    `Select rowid, * from Word`,
+                    `Select rowid, * from Word where is_current = 0`,
                     [],
                     (_, { rows: { _array } }) => {
                         _array.forEach(dbWord => {

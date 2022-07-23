@@ -326,8 +326,6 @@ class MainGameStore implements IMainGameStore {
     async defineTask() {
         TaskManager.defineTask(this.backGroundName, async () => {
             await this.wordChecker();
-            const now = Date.now();
-            console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
             return BackgroundFetch.BackgroundFetchResult.NewData;
         });
     }
@@ -341,7 +339,6 @@ class MainGameStore implements IMainGameStore {
 
     async wordChecker() {
         let needsToChange = await this.checkIfNeedsToFinishCurrentGame();
-        console.log('needs to change', needsToChange);
         
         if (needsToChange) {
             await this.setCurrentWordNotCurrent();

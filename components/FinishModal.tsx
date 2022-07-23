@@ -25,9 +25,7 @@ function FinishModal({ MainGameStore, isOpen, ModalClose }: TableLetterGameProps
     }, [isOpen])
 
     function getCurrentWord() {
-        MainGameStore?.getCurrentWord().then(word => {
-            console.log(word);
-            
+        MainGameStore?.getCurrentWord().then(word => {            
             setWord(word);
             MainGameStore.getTentatives(word.id).then(tentatives => {
                 setTentatives(tentatives)
